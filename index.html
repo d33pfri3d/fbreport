@@ -1,0 +1,130 @@
+<!-- 
+ Made by ShaunD (twitter.com/shaunmnemonic)
+ Currently listening to Black Balloon :  https://open.spotify.com/artist/2zwkjQHC1ohvlZH3Kf9ShM
+-->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>FB Report</title>
+
+
+  <style>
+    .dropzone {
+      background: grey;
+      width: 80%;
+      height: 300px;
+      margin: auto;
+    }
+  </style>
+
+</head>
+
+<body>
+  <h1>F</h1>
+
+  <div class="dropzone">
+    Drop File Here
+  </div>
+
+  <div class="temp-table">
+
+  </div>
+
+</body>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.5/jszip.min.js"></script>
+
+<script>
+  (function () {
+
+    var zone = document.querySelector(".dropzone")
+
+    // We need to cancel the dragover event in order for drop to work
+    document.addEventListener("dragover", function (event) {
+      event.preventDefault();
+    })
+
+    zone.addEventListener("drop", function (event) {
+      event.preventDefault();
+
+      // get the files
+      var file = event.dataTransfer.files[0];
+      console.log(file);
+
+      var reader = new FileReader();
+
+      reader.onload = function (e) {
+        console.log('Reading Data', e.target.result);
+        App.loadZip(e.target.result);
+      };
+
+      reader.readAsArrayBuffer(file);
+
+
+    }, false);
+
+
+  }());
+
+  var App = {
+    file: new JSZip(),
+    loadZip: function (data) {
+      JSZip.loadAsync(data)
+        .then(App.parseZip)
+    },
+    parseZip: function (zip) {
+      console.log('parsing...', zip);
+      zip.file("html/contact_info.htm")
+        .async("text")
+        .then(function (txt) {
+          var parser = new DOMParser();
+          var doc = parser.parseFromString(txt, "text/html");
+          //console.log(doc)
+          var bodyContents = doc.body.getElementsByClassName('contents');
+          console.log(bodyContents);
+          var numbersTable = bodyContents[0].children[1];
+          var callsContainer = bodyContents[0].children[2].getElementsByTagName('div')[0];
+          var smsContainer = bodyContents[0].children[2].getElementsByTagName('div')[1];
+          var mmsContainer = bodyContents[0].children[2].getElementsByTagName('div')[2];
+          App.parseNumbers(numbersTable);
+          App.parseCallHistory(callsContainer);
+          App.parseSms(smsContainer);
+          App.parseMms(mmsContainer);
+        })
+    },
+    parseNumbers: function (numbersFragment) {
+      console.log('Numbers : ', numbersFragment);
+    },
+    parseCallHistory: function (callsFragment) {
+      console.log('Calls : ', App.countEls(callsFragment, 'b', 'Number:'));
+    },
+    parseSms: function (smsFragment) {
+      console.log('SMS : ', App.countEls(smsFragment, 'b', 'Number:'));
+    },
+    parseMms: function (mmsFragment) {
+      console.log('MMS : ', App.countEls(mmsFragment, 'b', 'Number:'));
+    },
+    countEls: function (fragment, selector, innertext) {
+      var tagsCollection = fragment.getElementsByTagName(selector);
+      var tagsArray = Array.from(tagsCollection);
+
+      var found = tagsArray.filter(function (obj) {
+        return obj.innerText === innertext;
+      })
+
+      console.log(found);
+
+      return fragment.getElementsByTagName(selector).length;
+    }
+
+  }
+
+</script>
+
+</html>
