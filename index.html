@@ -99,10 +99,30 @@
         })
     },
     parseNumbers: function (numbersFragment) {
-      console.log('Numbers : ', numbersFragment);
+      var rows = numbersFragment.getElementsByTagName('tr');
+      App.total_numbers = rows.length - 1;
+      console.log('Numbers : ', rows.length - 1);
     },
     parseCallHistory: function (callsFragment) {
-      console.log('Calls : ', App.countEls(callsFragment, 'b', 'Number:'));
+      // Each section is <b> TEXT | TABLE 1 | TABLE 2
+      var section = []
+      var sections = [];
+      var fragmentArray = Array.from(callsFragment.children);
+
+      for (i = 0; i < fragmentArray.length; i++) {
+
+        if (i % 4 === 3) {
+          sections.push(section);
+          section = [];
+        } else {
+          section.push(fragmentArray[i]);
+        }
+
+      }
+
+      console.log('Sections ', sections);
+
+      //console.log('Calls : ', App.countEls(callsFragment, 'b', 'Number:'));
     },
     parseSms: function (smsFragment) {
       console.log('SMS : ', App.countEls(smsFragment, 'b', 'Number:'));
@@ -117,8 +137,6 @@
       var found = tagsArray.filter(function (obj) {
         return obj.innerText === innertext;
       })
-
-      console.log(found);
 
       return fragment.getElementsByTagName(selector).length;
     }
